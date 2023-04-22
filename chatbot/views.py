@@ -20,7 +20,7 @@ class StopOnTokens(StoppingCriteria):
 
 class ChatbotView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'chatbot.html'
+    template_name = 'bot.html'
 
     def _draft_response(self, message):
         system_prompt = """<|SYSTEM|># StableLM Tuned (Alpha version)
