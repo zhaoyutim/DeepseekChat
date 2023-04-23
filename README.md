@@ -1,5 +1,5 @@
 # StableLMChat
-Web Chatbot based on StableLM and Django
+Web Chatbot based on StableLM and Django. This WebUI is able to generate ChatGPT like responses with StableLM model.
 
 ## Repo Structure
     .
@@ -11,4 +11,4 @@ Web Chatbot based on StableLM and Django
 
 ## How to Start the server
 
-python manage.py runserver --noreload (--noreload is to make sure model is loaded only once during development)
+    python manage.py runserver --noreload (--noreload is to make sure model is loaded only once during development)
