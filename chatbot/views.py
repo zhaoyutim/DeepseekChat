@@ -1,12 +1,10 @@
-from rest_framework import generics
-from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.shortcuts import render, get_object_or_404
-from django.conf import settings
-from .apps import ChatbotConfig
-from transformers import StoppingCriteria, StoppingCriteriaList
 import torch
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from transformers import StoppingCriteria, StoppingCriteriaList
+
+from .apps import ChatbotConfig
 
 model = None
 
@@ -18,9 +16,14 @@ class StopOnTokens(StoppingCriteria):
                 return True
         return False
 
-class ChatbotView(APIView):
+class ChatbotTemplateView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'bot.html'
+
+    def get(self, request):
+        return Response({})
+
+class ChatbotGenerateAnswerView(APIView):
 
     def _draft_response(self, message):
         system_prompt = """<|SYSTEM|># StableLM Tuned (Alpha version)
@@ -39,24 +42,26 @@ class ChatbotView(APIView):
         do_sample = True
         model = ChatbotConfig.model
         tokenizer = ChatbotConfig.tokenizer
+        response_special_token = ''
+        while '<|endoftext|>' not in response_special_token:
+            inputs = tokenizer(prompt, return_tensors="pt")
+            inputs.to(model.device)
 
-        inputs = tokenizer(prompt, return_tensors="pt")
-        inputs.to(model.device)
-
-        # Generate
-        tokens = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            top_k=top_k,
-            top_p=top_p,
-            do_sample=do_sample,
-            pad_token_id=tokenizer.eos_token_id,
-            stopping_criteria=StoppingCriteriaList([StopOnTokens()])
-        )
-        completion_tokens = tokens[0][inputs['input_ids'].size(1):]
-        response = tokenizer.decode(completion_tokens, skip_special_tokens=True)
-        return response
+            # Generate
+            tokens = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_k=top_k,
+                top_p=top_p,
+                do_sample=do_sample,
+                pad_token_id=tokenizer.eos_token_id,
+                stopping_criteria=StoppingCriteriaList([StopOnTokens()])
+            )
+            completion_tokens = tokens[0][inputs['input_ids'].size(1):]
+            response_special_token += tokenizer.decode(completion_tokens, skip_special_tokens=False)
+            prompt += tokenizer.decode(completion_tokens, skip_special_tokens=True)
+        return prompt.split('<|ASSISTANT|>')[-1]
 
     def get(self, request):
         return Response({'response': 'Dummy Response'})

@@ -12,6 +12,23 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+default_headers = (
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'cache-control',
+    'content-type',
+    'dnt',
+    'origin',
+    'pragma',
+    'referer',
+    'sec-fetch-dest',
+    'sec-fetch-mode',
+    'sec-fetch-site',
+    'user-agent',
+    'x-requested-with'
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'chatbot',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -49,7 +67,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:63342',
+]
+
+# Add the following settings to allow the 'Access-Control-Allow-Origin' header
+CORS_ALLOW_HEADERS = default_headers + ('Access-Control-Allow-Origin',)
+CORS_EXPOSE_HEADERS = default_headers + ('Access-Control-Allow-Origin',)
 
 ROOT_URLCONF = 'StableLMChat.urls'
 
@@ -64,6 +92,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
             ],
         },
     },

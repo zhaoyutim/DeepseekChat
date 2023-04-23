@@ -1,5 +1,5 @@
+{% load static %}
 <html>
-
 <head>
 
 	<!-- seo related -->
@@ -17,7 +17,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 
 	<!-- custom css -->
-	<link rel="stylesheet" type="text/css" href="static/main.css">
+	<link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
 
 </head>
 
@@ -33,7 +33,7 @@
 				<div class="chat_window">
 
 					<div class="top_menu">
-						<div class="title">ChatBot - Jarvis</div>
+						<div class="title">ChatBot - StableLM</div>
 					</div>
 
 					<!-- dynamically rendered -->
@@ -102,7 +102,7 @@
 	</script>
 
 	<!-- custom scripts -->
-	<script src="static/main.js"></script>
+	<script src="{% static 'main.js' %}"></script>
 </body>
 
 </html>
