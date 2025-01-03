@@ -1,20 +1,16 @@
-import torch
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from transformers import StoppingCriteria, StoppingCriteriaList
-
+from langchain_openai import ChatOpenAI
 from .apps import ChatbotConfig
-
+import yaml
 model = None
 
-class StopOnTokens(StoppingCriteria):
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        stop_ids = [50278, 50279, 50277, 1, 0]
-        for stop_id in stop_ids:
-            if input_ids[0][-1] == stop_id:
-                return True
-        return False
+with open("credentials.yaml") as stream:
+    try:
+        credential_file = yaml.safe_load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
 
 class ChatbotTemplateView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -26,42 +22,16 @@ class ChatbotTemplateView(APIView):
 class ChatbotGenerateAnswerView(APIView):
 
     def _draft_response(self, message):
-        system_prompt = """<|SYSTEM|># StableLM Tuned (Alpha version)
-        - StableLM is a helpful and harmless open-source AI language model developed by StabilityAI.
-        - StableLM is excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.
-        - StableLM is more than just an information source, StableLM is also able to write poetry, short stories, and make jokes.
-        - StableLM will refuse to participate in anything that could harm a human.
-        """
-        user_prompt = message
-        prompt = f"{system_prompt}<|USER|>{user_prompt}<|ASSISTANT|>"
+        llm = ChatOpenAI(
+            model='deepseek-chat',
+            openai_api_key=credential_file.get('deepseekapi'),
+            openai_api_base='https://api.deepseek.com',
+            max_tokens=1024
+        )
 
-        max_new_tokens = 132
-        temperature = 0.7
-        top_k = 0
-        top_p = 0.9
-        do_sample = True
-        model = ChatbotConfig.model
-        tokenizer = ChatbotConfig.tokenizer
-        response_special_token = ''
-        while '<|endoftext|>' not in response_special_token:
-            inputs = tokenizer(prompt, return_tensors="pt")
-            inputs.to(model.device)
+        response = llm.invoke(message, temperature=1)
 
-            # Generate
-            tokens = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_k=top_k,
-                top_p=top_p,
-                do_sample=do_sample,
-                pad_token_id=tokenizer.eos_token_id,
-                stopping_criteria=StoppingCriteriaList([StopOnTokens()])
-            )
-            completion_tokens = tokens[0][inputs['input_ids'].size(1):]
-            response_special_token += tokenizer.decode(completion_tokens, skip_special_tokens=False)
-            prompt += tokenizer.decode(completion_tokens, skip_special_tokens=True)
-        return prompt.split('<|ASSISTANT|>')[-1]
+        return response.content
 
     def get(self, request):
         return Response({'response': 'Dummy Response'})
