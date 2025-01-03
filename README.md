@@ -5,7 +5,6 @@ Web Chatbot based on DeepSeekV3, Django and Langchain. This WebUI is able to gen
     .
     ├── chatbot                                              # Django Apps
     │   ├── views.py                                         # Views contains chat endpoint and frontend template
-    │   ├── initialization.py                                # Initialization StableLM model in Local machine
     ├── DeepSeekChat                                         # Project Folder
     └── README.md
 
