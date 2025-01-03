@@ -1,4 +1,4 @@
-# StableLMChat
+# DeepSeekChat
 Web Chatbot based on DeepSeekV3, Django and Langchain. This WebUI is able to generate ChatGPT like responses with DeepSeekV3 model.
 
 ## Repo Structure
